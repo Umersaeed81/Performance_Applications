@@ -74,6 +74,7 @@ E:/Attendance/Ali/2025-05-01_Thursday
 ✅ Use the Save Settings button to store frequently used paths and names.
 🧼 Make sure paths are valid and the script has permission to write to the chosen directory.
 
+
 ![Python Version](https://img.shields.io/badge/python-3.9+-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
