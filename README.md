@@ -31,6 +31,8 @@ A powerful and interactive Streamlit web app that dynamically creates folders ba
 
 ## 🔧 How to Use
 
+### 1. Clone this Repository:
+
 ```python
 # Your Python code here
 git clone https://github.com/your-username/date-folder-creator.git
