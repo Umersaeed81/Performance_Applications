@@ -33,5 +33,7 @@ A powerful and interactive Streamlit web app that dynamically creates folders ba
 
 ```python
 # Your Python code here
-print("Hello, GitHub README!")
+git clone https://github.com/your-username/date-folder-creator.git
+cd date-folder-creator
+```
 
