@@ -22,3 +22,9 @@ A powerful and interactive Streamlit web app that dynamically creates folders ba
 | 👤 + 🗓️ Names + Weekdays                  | Name-based folders with weekday-only subfolders              |
 | 👤 + 📅 + 📛 Names + All Dates + Day Names | Name-based folders with all dates and day names              |
 | 👤 + 🗓️ + 📛 Names + Weekdays + Day Names | Name-based folders for weekdays with day names               |
+
+## 🛠️ Tech Stack
+
+- Python 3.9+
+- Streamlit – for UI
+- os, json, datetime, calendar – standard Python libraries for folder operations and date handling
