@@ -34,8 +34,19 @@ A powerful and interactive Streamlit web app that dynamically creates folders ba
 ### 1. Clone this Repository:
 
 ```python
-# Your Python code here
 git clone https://github.com/your-username/date-folder-creator.git
 cd date-folder-creator
 ```
 
+### 2. Install Dependencies:
+
+```python
+pip install streamlit
+```
+### 3. Run the App:
+
+```python
+streamlit run app.py
+```
+### 4. Access the Web UI
+Open the given localhost URL in your browser (usually `http://localhost:8501/`).
