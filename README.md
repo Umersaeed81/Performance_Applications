@@ -30,5 +30,5 @@ A powerful and interactive Streamlit web app that dynamically creates folders ba
 - os, json, datetime, calendar – standard Python libraries for folder operations and date handling
 
 ## 🔧 How to Use
-<pre> ```git clone https://github.com/your-username/date-folder-creator.git 
-cd date-folder-creator ``` </pre>
+<pre> git clone https://github.com/your-username/date-folder-creator.git 
+cd date-folder-creator  </pre>
