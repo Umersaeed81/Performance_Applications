@@ -50,3 +50,19 @@ streamlit run app.py
 ```
 ### 4. Access the Web UI
 Open the given localhost URL in your browser (usually `http://localhost:8501/`).
+
+## 📂 Example Output
+If you choose:
+- Names: Umer, Ali
+- Date Range: 2025-05-01 to 2025-05-05
+- Option: 👤 + 📅 + 📛 Names + All Dates + Day Names
+
+It will create folders like:
+
+```python
+E:/Attendance/Umer/2025-05-01_Thursday
+E:/Attendance/Umer/2025-05-02_Friday
+...
+E:/Attendance/Ali/2025-05-01_Thursday
+...
+```
