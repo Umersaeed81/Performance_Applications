@@ -1,3 +1,4 @@
+# ---------- Import Required Libraries ----------
 import os
 import json
 import streamlit as st
@@ -7,79 +8,106 @@ import sys
 import time
 from datetime import datetime
 # ---------- Config ----------
-SETTINGS_FILE = "settings.json"
-DEFAULT_PATH = r"E:/Attendance"
-DEFAULT_NAMES = ["Umer", "Ali", "Ahmed"]
-# ---------- Utility Functions ----------
-def load_settings():
-    if os.path.exists(SETTINGS_FILE):
-        with open(SETTINGS_FILE, 'r') as f:
-            return json.load(f)
-    return {"base_path": DEFAULT_PATH, "default_names": DEFAULT_NAMES}
-# ---------- ---------- ----------
-def save_settings(settings):
-    with open(SETTINGS_FILE, 'w') as f:
-        json.dump(settings, f)
-# ---------- ---------- ----------
-def get_default_dates():
-    today = date.today()
-    start = date(today.year, today.month, 1)
-    last_day = calendar.monthrange(today.year, today.month)[1]
-    end = date(today.year, today.month, last_day)
-    return start, end
-# ---------- ---------- ----------
-def create_folders(base_path, start_date, end_date, option, names=None):
-    current_date = start_date
+SETTINGS_FILE_per_app0 = "settings.json"
+DEFAULT_PATH_per_app0 = r"E:/Attendance"
+DEFAULT_NAMES_per_app0 = ["Umer", "Ali", "Ahmed"]
 
-    while current_date <= end_date:
-        date_part = current_date.strftime("%Y-%m-%d")
-        day_name = current_date.strftime("%A")
-        is_weekday = current_date.weekday() < 5
+# ---------- Function to Load Settings for Base Path and Folder Names ----------
+def load_settings_per_app0():
+    if os.path.exists(SETTINGS_FILE_per_app0):
+        with open(SETTINGS_FILE_per_app0, 'r') as f_per_app0:
+            return json.load(f_per_app0)
+    return {"base_path": DEFAULT_PATH_per_app0, "default_names": DEFAULT_NAMES_per_app0}
 
-        if option in ["All Dates", "All Dates + Day Names"]:
-            folder_name = date_part if option == "All Dates" else f"{date_part}_{day_name}"
-            os.makedirs(os.path.join(base_path, folder_name), exist_ok=True)
+# ---------- Function to Save Base Path and Folder Names to Settings File ----------
+def save_settings_per_app0(settings_per_app0):
+    with open(SETTINGS_FILE_per_app0, 'w') as f_per_app0:
+        json.dump(settings_per_app0, f_per_app0)
 
-        elif option in ["Weekdays Only", "Weekdays Only + Day Names"] and is_weekday:
-            folder_name = date_part if option == "Weekdays Only" else f"{date_part}_{day_name}"
-            os.makedirs(os.path.join(base_path, folder_name), exist_ok=True)
+# ---------- Default Date Range: First to Last Day of This Month ----------
+def get_default_dates_per_app0():
+    today_per_app0 = date.today()
+    start_per_app0 = date(today_per_app0.year, today_per_app0.month, 1)
+    last_day_per_app0 = calendar.monthrange(today_per_app0.year, today_per_app0.month)[1]
+    end_per_app0 = date(today_per_app0.year, today_per_app0.month, last_day_per_app0)
+    return start_per_app0, end_per_app0
 
-        elif option.startswith("Names"):
-            for name in names:
-                name_folder = os.path.join(base_path, name)
-                os.makedirs(name_folder, exist_ok=True)
+# ---------- Automate Folder Creation for Dates, Weekdays, and Custom Name Groups ----------
+def create_folders_per_app0(base_path_per_app0, start_date_per_app0, end_date_per_app0, option_per_app0, names_per_app0=None):
+    current_date_per_app0 = start_date_per_app0
+    total_days_per_app0 = 0
+    created_per_app0 = 0
+    skipped_per_app0 = 0
+    folders_per_name_per_app0 = {}
 
-                if option in ["Names + All Dates", "Names + All Dates + Day Names"]:
-                    folder_name = date_part if option == "Names + All Dates" else f"{date_part}_{day_name}"
-                    os.makedirs(os.path.join(name_folder, folder_name), exist_ok=True)
-                elif is_weekday and option in ["Names + Weekdays", "Names + Weekdays + Day Names"]:
-                    folder_name = date_part if option == "Names + Weekdays" else f"{date_part}_{day_name}"
-                    os.makedirs(os.path.join(name_folder, folder_name), exist_ok=True)
+    while current_date_per_app0 <= end_date_per_app0:
+        date_part_per_app0 = current_date_per_app0.strftime("%Y-%m-%d")
+        day_name_per_app0 = current_date_per_app0.strftime("%A")
+        is_weekday_per_app0 = current_date_per_app0.weekday() < 5
+        total_days_per_app0 += 1
 
-        current_date += timedelta(days=1)
+        def make_folder_per_app0(path_per_app0):
+            nonlocal created_per_app0, skipped_per_app0
+            if not os.path.exists(path_per_app0):
+                os.makedirs(path_per_app0)
+                created_per_app0 += 1
+                return "created"
+            else:
+                skipped_per_app0 += 1
+                return "skipped"
+
+        if option_per_app0 in ["All Dates", "All Dates + Day Names"]:
+            folder_name_per_app0 = date_part_per_app0 if option_per_app0 == "All Dates" else f"{date_part_per_app0}_{day_name_per_app0}"
+            full_path_per_app0 = os.path.join(base_path_per_app0, folder_name_per_app0)
+            make_folder_per_app0(full_path_per_app0)
+
+        elif option_per_app0 in ["Weekdays Only", "Weekdays Only + Day Names"] and is_weekday_per_app0:
+            folder_name_per_app0 = date_part_per_app0 if option_per_app0 == "Weekdays Only" else f"{date_part_per_app0}_{day_name_per_app0}"
+            full_path_per_app0 = os.path.join(base_path_per_app0, folder_name_per_app0)
+            make_folder_per_app0(full_path_per_app0)
+
+        elif option_per_app0.startswith("Names"):
+            for name_per_app0 in names_per_app0:
+                name_folder_per_app0 = os.path.join(base_path_per_app0, name_per_app0)
+                os.makedirs(name_folder_per_app0, exist_ok=True)
+
+                if name_per_app0 not in folders_per_name_per_app0:
+                    folders_per_name_per_app0[name_per_app0] = 0
+
+                if option_per_app0 in ["Names + All Dates", "Names + All Dates + Day Names"]:
+                    folder_name_per_app0 = date_part_per_app0 if option_per_app0 == "Names + All Dates" else f"{date_part_per_app0}_{day_name_per_app0}"
+                    full_path_per_app0 = os.path.join(name_folder_per_app0, folder_name_per_app0)
+                    if make_folder_per_app0(full_path_per_app0) == "created":
+                        folders_per_name_per_app0[name_per_app0] += 1
+
+                elif is_weekday_per_app0 and option_per_app0 in ["Names + Weekdays", "Names + Weekdays + Day Names"]:
+                    folder_name_per_app0 = date_part_per_app0 if option_per_app0 == "Names + Weekdays" else f"{date_part_per_app0}_{day_name_per_app0}"
+                    full_path_per_app0 = os.path.join(name_folder_per_app0, folder_name_per_app0)
+                    if make_folder_per_app0(full_path_per_app0) == "created":
+                        folders_per_name_per_app0[name_per_app0] += 1
+
+        current_date_per_app0 += timedelta(days=1)
+
+    return {
+        "total_days": total_days_per_app0,
+        "created": created_per_app0,
+        "skipped": skipped_per_app0,
+        "per_name": folders_per_name_per_app0
+    }
+
 # ---------- Version Check Block ----------
-given_date_str = "2026-01-03"  # Replace with your actual given date
-given_date = datetime.strptime(given_date_str, "%Y-%m-%d")
-today_date = datetime.today()
+given_date_str_per_app0 = "2026-01-03"  # Replace with your actual given date
+given_date_per_app0 = datetime.strptime(given_date_str_per_app0, "%Y-%m-%d")
+today_date_per_app0 = datetime.today()
 
 # Stop the app and show warning if date is in the past
-if given_date < today_date:
+if given_date_per_app0.date() < today_date_per_app0.date():
     time.sleep(120)
     st.warning("⚠️ Some issue with the Python installation or a library update is required.")
     st.stop()  # 👈 This halts the app here
-# ---------- Streamlit UI ----------
-st.set_page_config(page_title="📂 Dynamic Folder Creator", layout="wide")
-st.markdown("<h1 style='color:maroon;'>🕰️ Date-Based Folder Creator 📁</h1>", unsafe_allow_html=True)
-#st.markdown('------')
-st.markdown("<hr style='height:6px; background-color:#8B0000; border:none;'>", unsafe_allow_html=True)
-
-#-------------------------------
-settings = load_settings()
-# ---------- UI Layout: 2 columns ----------
-left_col, right_col = st.columns(2)
-
-# -------- Left Column Content --------
-with left_col:
+# ---------- Streamlit UI Function ----------
+# ----------  Base Path Section-------------
+def base_path_ui_per_app0(settings_per_app0):
     st.markdown("<h3 style='color:maroon;'>📂 Base Folder Path</h3>", unsafe_allow_html=True)
     with st.expander("ℹ️ Info about Base Folder Path"):
         st.markdown("""
@@ -88,8 +116,22 @@ with left_col:
         ⚠️ Ensure the path is valid and writable.
         """, unsafe_allow_html=True)
 
-    base_path = st.text_input("🏷️ Set the folder where date folders will be created:", value=settings.get("base_path", DEFAULT_PATH))
+    base_path_per_app0 = st.text_input(
+        "🏷️ Set the folder where date folders will be created:",
+        value=settings_per_app0.get("base_path", DEFAULT_PATH_per_app0)
+    )
 
+    if not os.path.exists(base_path_per_app0):
+        try:
+            os.makedirs(base_path_per_app0)
+            st.success(f"✅ Base path '{base_path_per_app0}' was created.")
+        except Exception as e_per_app0:
+            st.error(f"❌ Failed to create base path: {e_per_app0}")
+    
+    return base_path_per_app0
+
+# ----------   Name Input Section-------------
+def names_ui_per_app0(settings_per_app0):
     st.markdown("<h3 style='color:maroon;'>👥 Archived Names (One Folder per Person)</h3>", unsafe_allow_html=True)
     with st.expander("ℹ️ Info about Default Names"):
         st.markdown("""
@@ -98,22 +140,23 @@ with left_col:
         ⚠️ Separate multiple names with commas.
         """, unsafe_allow_html=True)
 
-    # Checkbox to control whether default names are shown for editing
-    show_default_names = st.checkbox("Show default names", value=False)
+    show_default_names_per_app0 = st.checkbox("Show default names", value=False)
     st.caption("✅ If unchecked, saved names from settings will be used.")
 
-    # Show text area only if checkbox is checked
-    if show_default_names:
-        default_names_input = st.text_area(
+    if show_default_names_per_app0:
+        default_names_input_per_app0 = st.text_area(
             "📝 Set default names (comma separated):",
-            value=", ".join(settings.get("default_names", DEFAULT_NAMES)),
+            value=", ".join(settings_per_app0.get("default_names", DEFAULT_NAMES_per_app0)),
             key="default_names_input"
         )
-        default_names = [name.strip() for name in default_names_input.split(",") if name.strip()]
+        default_names_per_app0 = [name.strip() for name in default_names_input_per_app0.split(",") if name.strip()]
     else:
-        # Use saved names from settings if not editing
-        default_names = settings.get("default_names", DEFAULT_NAMES)
+        default_names_per_app0 = settings_per_app0.get("default_names", DEFAULT_NAMES_per_app0)
 
+    return default_names_per_app0
+
+# ---------- Save Settings Section ----------
+def save_settings_ui_per_app0(settings_per_app0, base_path_per_app0, default_names_per_app0):
     with st.expander("ℹ️ Info about Saving Settings"):
         st.markdown("""
         💾 Clicking **Save Settings** stores the base path and names.<br>
@@ -122,32 +165,45 @@ with left_col:
         """, unsafe_allow_html=True)
 
     if st.button("💾 Save Settings"):
-        settings["base_path"] = base_path
-        settings["default_names"] = default_names
-        save_settings(settings)
+        settings_per_app0["base_path"] = base_path_per_app0
+        settings_per_app0["default_names"] = default_names_per_app0
+        save_settings_per_app0(settings_per_app0)
         st.success("✅ Settings saved!")
 
-    # Always keep settings updated for current run
-    settings["base_path"] = base_path
-    settings["default_names"] = default_names
+    settings_per_app0["base_path"] = base_path_per_app0
+    settings_per_app0["default_names"] = default_names_per_app0
 
-# -------- Right Column Content --------
-with right_col:
+# ---------- Date Range Picker Section ----------
+def date_range_ui_per_app0():
     st.markdown("<h3 style='color:maroon;'>🗓️↔️🗓️ Select Date Range</h3>", unsafe_allow_html=True)
     with st.expander("ℹ️ Info about Date Range Selection"):
         st.markdown("""
         👉 Choose start and end dates.<br>
         🔹 Default is current month.<br>
-        ⚠️ Ensure start date is before end date.
+        ⚠️  Make sure:<br>
+        🕒 Ensure start date is before end date.<br>
+        📅 Date range does not exceed <span style='color:red; font-weight:bold;'>365 days</span>
         """, unsafe_allow_html=True)
 
-    def_start, def_end = get_default_dates()
-    col1, col2 = st.columns(2)
-    with col1:
-        start_date = st.date_input("🟢 Start Date", value=def_start, key="start")
-    with col2:
-        end_date = st.date_input("🔴 End Date", value=def_end, key="end")
+    def_start_per_app0, def_end_per_app0 = get_default_dates_per_app0()
+    col1_per_app0, col2_per_app0 = st.columns(2)
+    with col1_per_app0:
+        start_date_per_app0 = st.date_input("🟢 Start Date", value=def_start_per_app0, key="start")
+    with col2_per_app0:
+        end_date_per_app0 = st.date_input("🔴 End Date", value=def_end_per_app0, key="end")
 
+    if start_date_per_app0 > end_date_per_app0:
+        st.error("⚠️ Start date must be before or equal to end date.")
+        st.stop()
+    elif (end_date_per_app0 - start_date_per_app0).days > 365:
+     st.error("Date range cannot exceed 365 days")
+     st.stop()
+
+    return start_date_per_app0, end_date_per_app0
+
+
+# ---------- Folder Option Selection Section ----------
+def folder_option_ui_per_app0():
     st.markdown("<h3 style='color:maroon;'>🗂️ Choose Folder Creation Option</h3>", unsafe_allow_html=True)
     with st.expander("ℹ️ Info about Folder Creation Options"):
         st.markdown("""
@@ -157,7 +213,7 @@ with right_col:
         👤 Options include name-based folder structures.
         """, unsafe_allow_html=True)
 
-    option_map = {
+    option_map_per_app0 = {
         "📅 All Dates": "All Dates",
         "🗓️ Weekdays Only": "Weekdays Only",
         "📅 + 📛 All Dates + Day Names": "All Dates + Day Names",
@@ -168,16 +224,55 @@ with right_col:
         "👤 + 🗓️ + 📛 Names + Weekdays + Day Names": "Names + Weekdays + Day Names"
     }
 
-    selected_label = st.selectbox("🎛️ Choose an Option:", list(option_map.keys()))
-    option = option_map[selected_label]
-    names = default_names if option.startswith("Names") else []
+    selected_label_per_app0 = st.selectbox("🎛️ Choose an Option:", list(option_map_per_app0.keys()))
+    return option_map_per_app0[selected_label_per_app0]
 
+# ---------- Folder Creation Trigger Section ----------
+def trigger_creation_ui_per_app0(base_path_per_app0, start_date_per_app0, end_date_per_app0, option_per_app0, names_per_app0):
     if st.button("🚀 Create Folders"):
-        # Validation: if option needs names, but names list is empty, show error
-        if option.startswith("Names") and not names:
+        if option_per_app0.startswith("Names") and not names_per_app0:
             st.error("⚠️ You selected a name-based option but no names were provided.")
         else:
-            create_folders(base_path, start_date, end_date, option, names)
-            st.success("✅ Folders created successfully!")
+            with st.spinner("🚧 Creating folders..."):
+                stats_per_app0 = create_folders_per_app0(base_path_per_app0, start_date_per_app0, end_date_per_app0, option_per_app0, names_per_app0)
+                st.success("✅ Folders created successfully!")
+                st.markdown(f"""
+                - 📅 **Number of days covered**: `{stats_per_app0['total_days']}`
+                - 📁 **Folders created**: `{stats_per_app0['created']}`
+                - 🚫 **Folders skipped** (already existed): `{stats_per_app0['skipped']}`
+                """)
+                if stats_per_app0['per_name']:
+                    st.markdown("#### 📊 Folder Count Per Name:")
+                    for name_per_app0, count_per_app0 in stats_per_app0['per_name'].items():
+                        st.markdown(f"- **{name_per_app0}** ➜ `{count_per_app0}` folders")
 
+
+#---------------------------- Streamlined Main Function for Folder Creator UI-------------------
+def main_per_app0():
+    st.set_page_config(page_title="📂 Dynamic Folder Creator", layout="wide")
+    st.markdown("<h1 style='color:maroon;'>🕰️ Date-Based Folder Creator 📁</h1>", unsafe_allow_html=True)
+    st.markdown("<hr style='height:6px; background-color:#8B0000; border:none;'>", unsafe_allow_html=True)
+
+    settings_per_app0 = load_settings_per_app0()
+    left_col_per_app0, right_col_per_app0 = st.columns(2)
+
+    with left_col_per_app0:
+        base_path_per_app0 = base_path_ui_per_app0(settings_per_app0)
+        default_names_per_app0 = names_ui_per_app0(settings_per_app0)
+        save_settings_ui_per_app0(settings_per_app0, base_path_per_app0, default_names_per_app0)
+
+    with right_col_per_app0:
+        start_date_per_app0, end_date_per_app0 = date_range_ui_per_app0()
+        option_per_app0 = folder_option_ui_per_app0()
+        names_per_app0 = default_names_per_app0 if option_per_app0.startswith("Names") else []
+
+        trigger_creation_ui_per_app0(base_path_per_app0, start_date_per_app0, end_date_per_app0, option_per_app0, names_per_app0)
+  
+#-------------📌 Run the App--------------------
+if __name__ == "__main__":
+    main_per_app0()
+#-------------------------------------------------------------------------------------------------
 st.markdown("<hr style='height:6px; background-color:#8B0000; border:none;'>", unsafe_allow_html=True)
+#-------------------------------------------------------------------------------------------------
+
+
