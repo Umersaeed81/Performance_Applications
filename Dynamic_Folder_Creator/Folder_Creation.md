@@ -23,7 +23,7 @@ while current_date <= end_date:
 print("Date Folders Created Successfully.")
 ```
 
-    Date Folders Created Successfully.
+
     
 
 ## 1.2) Creating Folders Only for Working Days in a Date Range (Excluding Weekends)
@@ -52,7 +52,7 @@ while current_date <= end_date:
 print("Working Day Folders Created Successfully.")
 ```
 
-    Working Day Folders Created Successfully.
+
     
 
 ## 2.1) Creating Folders with Date and Day Name for Each Day in a Date Range
@@ -82,7 +82,7 @@ while current_date <= end_date:
 print("Date Folders with day names created successfully.")
 ```
 
-    Date Folders with day names created successfully.
+
     
 
 ## 2.2) Creating Folders for Working Days Only with Date and Day Name in Folder Name
@@ -113,7 +113,7 @@ while current_date <= end_date:
 print("Working day folders with day names created successfully.")
 ```
 
-    Working day folders with day names created successfully.
+
     
 
 ## 3.1) Creating Date-Based Subfolders for Multiple Names
@@ -148,7 +148,7 @@ for name in names:
 print("Date Folders Created Inside Each Name Folder Successfully.")
 ```
 
-    Date Folders Created Inside Each Name Folder Successfully.
+
     
 
 ## 3.2) Creating Date-Based Subfolders for Each Name While Excluding Weekends
@@ -185,7 +185,7 @@ print("Date Folders (Weekdays Only) Created Inside Each Name Folder Successfully
 
 ```
 
-    Date Folders (Weekdays Only) Created Inside Each Name Folder Successfully.
+
     
 
 ## 4.1) Creating Date and Day Name Subfolders for Multiple Names
