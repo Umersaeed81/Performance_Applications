@@ -6,8 +6,8 @@
 
 ## 📂 [Date-Based Folder Creator](https://github.com/Umersaeed81/Performance_Applications/blob/main/Dynamic_Folder_Creator/README.md)
 
-🎯 A Streamlit app to create folders based on dates, weekdays, and custom names.
-📅 Pick a date range and generate daily or weekday-only folders with day names.
+<br>🎯 A Streamlit app to create folders based on dates, weekdays, and custom names.<\br>
+<br>📅 Pick a date range and generate daily or weekday-only folders with day names.<\br>
 
 👥 Option to create personal folders for team members with nested date folders.
 
