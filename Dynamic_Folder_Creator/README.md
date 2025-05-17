@@ -1,3 +1,7 @@
+![Python Version](https://img.shields.io/badge/python-3.9+-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+
+#---------------------------------
 # 📂 Date-Based Folder Creator using Streamlit
 
 A powerful and interactive Streamlit web app that dynamically creates folders based on date ranges, weekdays, day names, and personalized names. Ideal for managing attendance records, daily logs, or task tracking folders in a systematic and automated way.
@@ -75,6 +79,4 @@ E:/Attendance/Ali/2025-05-01_Thursday
 🧼 Make sure paths are valid and the script has permission to write to the chosen directory.
 
 
-![Python Version](https://img.shields.io/badge/python-3.9+-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
 
