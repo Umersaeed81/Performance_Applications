@@ -76,6 +76,7 @@ E:/Attendance/Ali/2025-05-01_Thursday
 ## 🧠 Tips
 
 ✅ Use the Save Settings button to store frequently used paths and names.
+
 🧼 Make sure paths are valid and the script has permission to write to the chosen directory.
 
 
