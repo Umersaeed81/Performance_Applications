@@ -76,5 +76,7 @@ We welcome contributions! Please fork the repo and create a pull request or open
 
 # 🔗 Contact
 Created by [Umer Saeed]
+
 📧 Email: umersaeed81@hotmail.com
+
 🌐 LinkedIn: https://www.linkedin.com/in/engumersaeed/
