@@ -25,7 +25,7 @@ Soon, it wasn't just an app. It became your personal assistant for email mining.
 
 ## 🔙 May 23, 2025 — The Minimalist Start
 
-On May 23, 2025, we released the first version of our Outlook Streamlit app. It was a smart but minimalistic tool, introduced in a LinkedIn post.
+On May 23, 2025, we released the first version of our Outlook Streamlit app. It was a smart but minimalistic tool, introduced in a [LinkedIn Article](https://www.linkedin.com/pulse/automating-outlook-email-extraction-project-based-umer-saeed-prphf/?trackingId=E87bQYe%2F9qNJ22MMoB5s7A%3D%3D).
 
 ### 💡 Version 1 Highlights:
 - ✅ Accepted a list of sender email addresses  
