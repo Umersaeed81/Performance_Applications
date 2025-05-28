@@ -263,7 +263,7 @@ Scalable and maintainable—ready for enterprise-level deployment and continuous
 Let’s connect! I’m always open to collaboration and suggestions.
 
 📦 **Explore the Code on GitHub**:  
-👉 [GitHub Repository – Outlook Email Filter & Downloader](https://github.com/your-username/outlook-email-filter-app)
+👉 [GitHub Repository – Outlook Email Filter & Downloader](https://github.com/Umersaeed81/Performance_Applications/blob/main/Attendance_Email_Application/Attendance_Email_Application_05.py)
 
 ---
 
