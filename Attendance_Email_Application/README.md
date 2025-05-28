@@ -1,3 +1,6 @@
+![Python Version](https://img.shields.io/badge/python-3.9+-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+---------------------------------
 # 📬 Building the Ultimate Outlook Email Filter & Downloader with Streamlit
 
 ## 📖 The Story Behind the App
