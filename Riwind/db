@@ -1,0 +1,646 @@
+## 1. Import Required Libraries
+
+
+```python
+import os
+import zipfile
+import dask.dataframe as dd
+import numpy as np
+from pathlib import Path
+import glob
+import pandas as pd
+from functools import reduce  
+import shutil
+```
+
+## 2. Define Cell Mapping
+
+
+```python
+# Define your mappings
+groups = {
+    'Major Server': ['17625_Sunder Road Raiwind City Kasur (3G-CI-4984)',
+                    '17181_Haveli Salamat Pura Kasur (3G-CI-1653)',
+                    '17618_Railway Colony (Gold) Kasur (3G-CI-4981)',
+                    '27180_Sunder Estate Kasur (3G-CI-1652)',
+                    '33022_Pajian Village Lahore-Z3 (3G-CI-1560)',
+                    'CI-1125-2_Block J Bahria Orchard Lahore (3G-CI-1166)',
+                    'CI-1125-3_Block J Bahria Orchard Lahore (3G-CI-1166)',
+                    'CI-1212-1_Near Masjid Khalid Bin Waleed (3G-CI-1234)',
+                    'CI-1212-3_Near Masjid Khalid Bin Waleed (3G-CI-1234)',
+                    '3G-CI-6560-3_Pajian Village Lahore-Z3 (3022)',
+                    '3G-CI-9981-1_Railway Colony (Gold) Kasur (7618)',
+                    '3G-CI-9984-1_Sunder Road Raiwind City Kasur (7625)',
+                    '3G-CI-6652-2_Sunder Estate Kasur (7180)',
+                    '3G-CI-6653-1_Haveli Salamat Pura Kasur (7181)',
+                    '3G-CI-6166-2_Block J Bahria Orchard Lahore (CI-1125)',
+                    '3G-CI-6166-3_Block J Bahria Orchard Lahore (CI-1125)',
+                    '3G-CI-6234-3_Near Masjid Khalid Bin Waleed (CI-1212)',
+                    '3G-CI-6234-1_Near Masjid Khalid Bin Waleed (CI-1212)',
+                    '4G-CI-124984-1_Sunder Road Raiwind City Kasur (7625)',
+                    '4G-CI-124984-81_Sunder Road Raiwind City Kasur (7625)',
+                    '4G-CI-121653-1_Haveli Salamat Pura Kasur (7181)',
+                    '4G-CI-121653-81_Haveli Salamat Pura Kasur (7181)',
+                    '4G-CI-121560-3_Pajian Village Lahore-Z3 (3022)',
+                    '4G-CI-121560-13_Pajian Village Lahore-Z3 (3022)',
+                    '4G-CI-121652-2_Sunder Estate Kasur (7180)',
+                    '4G-CI-124981-1_Railway Colony (Gold) Kasur (7618)',
+                    '4G-CI-121652-12_Sunder Estate Kasur (7180)',
+                    '4G-CI-124981-81_Railway Colony (Gold) Kasur (7618)',
+                    '4G-CI-121166-3_Block J Bahria Orchard Lahore (CI-1125)',
+                    '4G-CI-121166-2_Block J Bahria Orchard Lahore (CI-1125)',
+                    '4G-CI-121234-3_Near Masjid Khalid Bin Waleed (CI-1212)',
+                    '4G-CI-121234-1_Near Masjid Khalid Bin Waleed (CI-1212)',
+                    '4G-CI-121234-83_Near Masjid Khalid Bin Waleed (CI-1212)',
+                    '4G-CI-121234-81_Near Masjid Khalid Bin Waleed (CI-1212)'],
+                
+                'Other': ['37625_Sunder Road Raiwind City Kasur (3G-CI-4984)',
+                '27625_Sunder Road Raiwind City Kasur (3G-CI-4984)',
+                '27181_Haveli Salamat Pura Kasur (3G-CI-1653)',
+                '37181_Haveli Salamat Pura Kasur (3G-CI-1653)',
+                '27618_Railway Colony (Gold) Kasur (3G-CI-4981)',
+                '37618_Railway Colony (Gold) Kasur (3G-CI-4981)',
+                '17620_Main Chowk Raiwand Kasur (3G-CI-1746)',
+                '27620_Main Chowk Raiwand Kasur (3G-CI-1746)',
+                '37620_Main Chowk Raiwand Kasur (3G-CI-1746)',
+                '37180_Sunder Estate Kasur (3G-CI-1652)',
+                '17180_Sunder Estate Kasur (3G-CI-1652)',
+                '13022_Pajian Village Lahore-Z3 (3G-CI-1560)',
+                '23022_Pajian Village Lahore-Z3 (3G-CI-1560)',
+                'CI-1125-1_Block J Bahria Orchard Lahore (3G-CI-1166)',
+                'CI-1234-1_Jalalpura Sue-e-Asal Road (3G-CI-1253)',
+                'CI-1234-2_Jalalpura Sue-e-Asal Road (3G-CI-1253)',
+                'CI-1234-3_Jalalpura Sue-e-Asal Road (3G-CI-1253)',
+                '3G-CI-6652-3_Sunder Estate Kasur (7180)',
+                '3G-CI-6560-2_Pajian Village Lahore-Z3 (3022)',
+                '3G-CI-6652-1_Sunder Estate Kasur (7180)',
+                '3G-CI-6560-1_Pajian Village Lahore-Z3 (3022)',
+                '3G-CI-6653-2_Haveli Salamat Pura Kasur (7181)',
+                '3G-CI-6746-2_Main Chowk Raiwand Kasur (7620)',
+                '3G-CI-9905-2_Raiwand City Kasur (3081)',
+                '3G-CI-9981-2_Railway Colony (Gold) Kasur (7618)',
+                '3G-CI-9983-2_Rehman Pura (Gold) Kasur (7621)',
+                '3G-CI-9984-2_Sunder Road Raiwind City Kasur (7625)',
+                '3G-CI-9983-1_Rehman Pura (Gold) Kasur (7621)',
+                '3G-CI-6653-3_Haveli Salamat Pura Kasur (7181)',
+                '3G-CI-6746-3_Main Chowk Raiwand Kasur (7620)',
+                '3G-CI-9905-3_Raiwand City Kasur (3081)',
+                '3G-CI-9981-3_Railway Colony (Gold) Kasur (7618)',
+                '3G-CI-9983-3_Rehman Pura (Gold) Kasur (7621)',
+                '3G-CI-9984-3_Sunder Road Raiwind City Kasur (7625)',
+                '3G-CI-6746-1_Main Chowk Raiwand Kasur (7620)',
+                '3G-CI-9905-1_Raiwand City Kasur (3081)',
+                '3G-CI-6166-1_Block J Bahria Orchard Lahore (CI-1125)',
+                '3G-CI-6253-3_Jalalpura Sue-e-Asal Road (CI-1234)',
+                '3G-CI-6253-2_Jalalpura Sue-e-Asal Road (CI-1234)',
+                '3G-CI-6253-1_Jalalpura Sue-e-Asal Road (CI-1234)',
+                '3G-CI-6234-2_Near Masjid Khalid Bin Waleed (CI-1212)',
+                '4G-CI-124984-3_Sunder Road Raiwind City Kasur (7625)',
+                '4G-CI-124984-2_Sunder Road Raiwind City Kasur (7625)',
+                '4G-CI-124984-82_Sunder Road Raiwind City Kasur (7625)',
+                '4G-CI-124984-83_Sunder Road Raiwind City Kasur (7625)',
+                '4G-CI-124983-3_Rehman Pura (Gold) Kasur (7621)',
+                '4G-CI-124983-2_Rehman Pura (Gold) Kasur (7621)',
+                '4G-CI-124983-1_Rehman Pura (Gold) Kasur (7621)',
+                '4G-CI-121746-1_Main Chowk Raiwand Kasur (7620)',
+                '4G-CI-121746-2_Main Chowk Raiwand Kasur (7620)',
+                '4G-CI-121746-3_Main Chowk Raiwand Kasur (7620)',
+                '4G-CI-121653-3_Haveli Salamat Pura Kasur (7181)',
+                '4G-CI-121653-2_Haveli Salamat Pura Kasur (7181)',
+                '4G-CI-121746-81_Main Chowk Raiwand Kasur (7620)',
+                '4G-CI-121746-82_Main Chowk Raiwand Kasur (7620)',
+                '4G-CI-121746-83_Main Chowk Raiwand Kasur (7620)',
+                '4G-CI-124983-81_Rehman Pura (Gold) Kasur (7621)',
+                '4G-CI-124983-82_Rehman Pura (Gold) Kasur (7621)',
+                '4G-CI-124983-83_Rehman Pura (Gold) Kasur (7621)',
+                '4G-CI-121653-82_Haveli Salamat Pura Kasur (7181)',
+                '4G-CI-121653-83_Haveli Salamat Pura Kasur (7181)',
+                '4G-CI-124905-3_Raiwand City Kasur (3081)',
+                '4G-CI-124905-2_Raiwand City Kasur (3081)',
+                '4G-CI-124905-1_Raiwand City Kasur (3081)',
+                '4G-CI-124905-83_Raiwand City Kasur (3081)',
+                '4G-CI-124905-81_Raiwand City Kasur (3081)',
+                 '4G-CI-124905-82_Raiwand City Kasur (3081)',
+                '4G-CI-121560-2_Pajian Village Lahore-Z3 (3022)',
+                '4G-CI-121560-1_Pajian Village Lahore-Z3 (3022)',
+                '4G-CI-121652-3_Sunder Estate Kasur (7180)',
+                '4G-CI-121652-1_Sunder Estate Kasur (7180)',
+                '4G-CI-124981-3_Railway Colony (Gold) Kasur (7618)',
+                '4G-CI-124981-2_Railway Colony (Gold) Kasur (7618)',
+                '4G-CI-124981-82_Railway Colony (Gold) Kasur (7618)',
+                '4G-CI-124981-83_Railway Colony (Gold) Kasur (7618)',
+                '4G-CI-121253-3_Jalalpura Sue-e-Asal Road (CI-1234)',
+                '4G-CI-121253-2_Jalalpura Sue-e-Asal Road (CI-1234)',
+                '4G-CI-121253-1_Jalalpura Sue-e-Asal Road (CI-1234)',
+                '4G-CI-121166-1_Block J Bahria Orchard Lahore (CI-1125)',
+                '4G-CI-121234-2_Near Masjid Khalid Bin Waleed (CI-1212)',
+                '4G-CI-121234-82_Near Masjid Khalid Bin Waleed (CI-1212)',
+                ],
+    
+                'Raiwind': ['13081_Raiwand City Kasur (3G-CI-4905)',
+                '23081_Raiwand City Kasur (3G-CI-4905)',
+                '33081_Raiwand City Kasur (3G-CI-4905)',
+                'CI-1212-2_Near Masjid Khalid Bin Waleed (3G-CI-1234)',
+                '17621_Rehman Pura (Gold) Kasur (3G-CI-4983)',
+                '27621_Rehman Pura (Gold) Kasur (3G-CI-4983)',
+                '37621_Rehman Pura (Gold) Kasur (3G-CI-4983)']
+                                }
+
+# Convert to a flat DataFrame
+groups_df = pd.DataFrame([(name, degree) for degree, names in groups.items() for name in names],
+                  columns=['Cell Name', 'Zone'])
+
+groups_df
+```
+
+## 3. Load & Extract Data from ZIP Files
+
+
+```python
+def load_from_zip_folder(zip_folder, keyword, required_columns, dtype=None):
+    """
+    🗜️ Extracts and combines CSV files from ZIPs in a folder, filtered by keyword and required columns.
+
+    Parameters:
+        zip_folder (str or Path): 📁 Folder containing ZIP files.
+        keyword (str): 🔍 Keyword to filter relevant CSV filenames (e.g., "(GSM_Cell_Hourly)").
+        required_columns (list): 🧱 List of required columns to read from CSVs.
+        dtype (dict): Optional 🧬 dictionary specifying data types for specific columns.
+
+    Returns:
+        pd.DataFrame: 🐼 Combined DataFrame with valid rows, or None if no match found.
+    """
+    zip_files = list(Path(zip_folder).glob("*.zip"))  # 📦 List all ZIP files in the folder
+    dfs = []  # 📋 Initialize list to collect DataFrames
+
+    for zip_file in zip_files:
+        with zipfile.ZipFile(zip_file, 'r') as z:
+            # 🎯 Filter CSV files inside the ZIP that match the keyword
+            csv_files = [f for f in z.namelist() if keyword in f and f.endswith(".csv")]
+
+            for csv_file in csv_files:
+                with z.open(csv_file) as f:
+                    try:
+                        df = pd.read_csv(
+                            f,
+                            usecols=required_columns,      # 🧩 Only load required columns
+                            dtype=dtype,                   # 🧬 Apply custom dtypes if given
+                            parse_dates=["Date"],          # 📆 Ensure 'Date' is parsed as datetime
+                            skiprows=range(6),             # 🪄 Skip first 6 header rows (formatting)
+                            skipfooter=1,                  # 🚫 Skip footer line if present
+                            engine='python',               # 🐍 Use Python engine for flexibility
+                            na_values=['NIL', '/0']        # ❓ Replace invalid entries with NaN
+                        )
+                        dfs.append(df)  # ✅ Add valid DataFrame to the list
+                    except ValueError:
+                        # ⚠️ Handle files missing required columns gracefully
+                        print(f"Skipping {csv_file} in {zip_file.name} - Missing required columns.")
+
+    if dfs:
+        return pd.concat(dfs, ignore_index=True)  # 🧩 Combine all valid DataFrames
+    else:
+        print("No matching CSV files found or required columns missing. ❌")
+        return None
+```
+
+## 4. Site/Cell ID Generater
+
+
+```python
+def extract_lte_ids(ddf, column_map):
+    for source_col, new_col in column_map.items():
+        ddf[new_col] = ddf[source_col].str.extract(r'^([^_]+)', expand=False)
+    return ddf
+```
+
+## 5. Filter Last 5 days
+
+
+```python
+def filter_max_5_dates(df, date_col='Date'):
+    """
+    🗓️ Filter the DataFrame to keep only the latest 5 unique dates.
+    Time filtering is removed.
+    """
+    df = df.copy()
+
+    # Convert date column to datetime
+    df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
+
+    # 1️⃣ Sort by date descending (latest first)
+    df = df.sort_values(by=date_col, ascending=False)
+
+    # 2️⃣ Get the latest 5 unique dates
+    latest_5_dates = df[date_col].dropna().unique()[:5]
+
+    # 3️⃣ Filter the DataFrame for these dates
+    df_filtered = df[df[date_col].isin(latest_5_dates)].copy()
+
+    # 4️⃣ Sort back by date ascending (optional)
+    df_filtered = df_filtered.sort_values(by=date_col).reset_index(drop=True)
+
+    return df_filtered
+```
+
+## 6. Load GSM Data & Process required data
+
+
+```python
+#  Define path and parameters for GSM Cell Hourly data
+zip_folder = "D:/Advance_Data_Sets/Raiwind"
+keyword_gsm = "(2G)"
+required_columns_gsm = [
+    'Date','Time','Cell Name',
+    'CSSR_Non Blocking',
+    'HSR (Incoming & Outgoing)',
+    'DCR',
+    'GlobelTraffic',
+    'GOS-SDCCH(%)',
+    'CallSetup TCH GOS(%)',
+    'Mobility TCH GOS(%)',
+    'TCH Availability Rate(%)',
+    'RxQual Index DL(%)',
+    'TCH assignment success rate (%)',
+    'Immediate assignment success rate (%)',
+    'CM30:Call Drops on SDCCH',
+    'CM33:Call Drops on Traffic Channel',
+    'Interference Band Proportion (4~5)(%)',
+    'U_AMR HR TRAFFIC',
+    'U_EFR TRAFFIC',
+    'K3004:Traffic Volume on SDCCH(Erl)',
+    'RL9A08:Rate of Transmitted Error Frames(%)'
+]
+
+#  Load GSM data from ZIP files 
+gsm_df = load_from_zip_folder(zip_folder, keyword_gsm, required_columns_gsm)
+
+# Generate GSM Cell ID
+gsm_df = extract_lte_ids(gsm_df, column_map={'Cell Name': 'Cell ID'})
+
+# merge the GSM Cell Hourly data with groups to get the zone
+gsm_df_map = pd.merge(gsm_df,groups_df,how='left',on=['Cell Name'])
+
+# filter max 5 days
+gsm_df_map_filtered = filter_max_5_dates(gsm_df_map, date_col='Date')
+```
+
+## 7. Load UMTS Data & Process required data
+
+
+```python
+#  Define path and parameters for UMTS Cell Hourly data
+keyword_umts = "(3G)"
+required_columns_umts = [
+    'Date','Time','RNC','Cell Name',
+    'AMR CS Traffic (Erl)',
+    'HSDPA RLC Traffic Volume (MB)',
+    'HSUPA RLC Traffic Volume (MB)',
+    'HSDPA Throughput (kbps)',
+    'CS Call Drop Rate (%)',
+    'PS Drop Rate (%)',
+    'RRC Connection Setup Success Rate (%)',
+    'CS RAB Setup Success Rate (%)',
+    'CS RAB Congestion Ratio (%)',
+    'PS RAB Assignment Success Rate (%)',
+    'PS RAB Congestion Ratio (%)',
+    'RRC Congestion Ratio (%)',
+    'Number of HSUPA Users (Max)',
+    'VS.MeanRTWP(dBm)',
+    'Cell Unavailability duration (Down Time)',
+    'Data Volume (GB)',
+    'Total TCP Utilization Rate (Cell-)(%)'
+    ]
+
+#  Load UMTS data from ZIP files 
+umts_df = load_from_zip_folder(zip_folder, keyword_umts, required_columns_umts)
+
+# Generate UMTS Cell ID
+umts_df = extract_lte_ids(umts_df, column_map={'Cell Name': 'Cell ID'})
+
+# merge the UMTS Cell Hourly data with groups to get the zone
+umts_df_map = pd.merge(umts_df,groups_df,how='left',on=['Cell Name'])
+
+# filter max 5 days
+umts_df_map_filtered = filter_max_5_dates(umts_df_map, date_col='Date')
+
+```
+
+## 8. Load LTE Data & Process required data
+
+
+```python
+#  Define path and parameters for LTE Cell Hourly data
+keyword_lte = "(4G)"
+
+required_columns_lte = [
+    'Date','Time','Cell Name',
+    'Data Volume (GB)',
+    'DL PRB Avg Utilization',
+    'Maximum User Number',
+    'DL User Thrp (Mbps)',
+    'L.E-RAB.FailEst.TNL',
+    'Average CQI',
+    'E-RAB resource congestion rate',
+    'ERAB Setup Success Rate',
+    'DL 64QAM (%)',
+    'DL 16QAM (%)',
+    'RRC Congestion Rate',
+    'Call Setup Success Rate',
+    'RRC Setup Success Rate',
+    'Service Drop Rate',
+    'Radio Network Unavailability Rate_Cell',
+    'CSFB Preparation Success Rate',
+    'Average User Number',
+    'S1 Handover Success Rate_DEN',
+    'UL UserThrp (Mbps)',
+    'Call Setup Success Rate',
+    'X2 Handover Success Rate',
+    'L.E-RAB.AbnormRel.Radio',
+    'Radio Network Unavailability Rate_Cell',
+    'CSFB Preparation Success Rate',
+    'E-RAB Setup Success Rate (VoIP) %(%)',
+    'Call Drop Rate (VoIP) %(%)',
+    'Call Setup Success Rate (VoIP)',
+    'SRVCC E2G Execution Success Rate',
+    'CA Pay Load (GB)',
+    'L.UL.Interference.Avg(dBm)'
+    ]
+
+#  Load LTE data from ZIP files 
+lte_df = load_from_zip_folder(zip_folder, keyword_lte, required_columns_lte)
+
+# Generate LTE Cell ID
+lte_df = extract_lte_ids(lte_df, column_map={'Cell Name': 'Cell ID'})
+
+# merge the LTE Cell Hourly data with groups to get the zone
+lte_df_map = pd.merge(lte_df,groups_df,how='left',on=['Cell Name'])
+
+# filter max 5 days
+lte_df_map_filtered = filter_max_5_dates(lte_df_map, date_col='Date')
+```
+
+## 9. File Path Setting
+
+
+```python
+# Set Working Folder Path
+path = 'D:/Advance_Data_Sets/Raiwind/gr'
+
+# Check if folder exists
+if not os.path.exists(path):
+    os.makedirs(path)  # Create the folder if it doesn't exist
+    print(f"📁 Folder created: {path}")
+else:
+    # Folder exists → remove all files inside it
+    for filename in os.listdir(path):
+        file_path = os.path.join(path, filename)
+        try:
+            if os.path.isfile(file_path) or os.path.islink(file_path):
+                os.remove(file_path)  # Delete file
+            elif os.path.isdir(file_path):
+                shutil.rmtree(file_path)  # Delete subfolder
+        except Exception as e:
+            print(f"⚠️ Failed to delete {file_path}. Reason: {e}")
+    print(f"🧹 All files deleted in: {path}")
+
+# Set as working directory
+os.chdir(path)
+print(f"✅ Working directory set to: {os.getcwd()}")
+```
+
+## 10. Export
+
+
+```python
+# # 🧹 Step 1: Clean date columns (remove time part)
+# for df in [gsm_df_map_filtered, umts_df_map_filtered, lte_df_map_filtered]:
+#     if 'Date' in df.columns:
+#         df['Date'] = pd.to_datetime(df['Date'], errors='coerce').dt.date
+
+# # 🧾 Step 2: Write to Excel with proper date formatting
+# with pd.ExcelWriter(
+#     'Graphs_data.xlsx',
+#     engine='openpyxl',
+#     date_format='dd-mm-yyyy',
+#     datetime_format='dd-mm-yyyy'
+# ) as writer:
+#     gsm_df_map_filtered.to_excel(writer, sheet_name="GSM", index=False)
+#     umts_df_map_filtered.to_excel(writer, sheet_name="UMTS", index=False)
+#     lte_df_map_filtered.to_excel(writer, sheet_name="LTE", index=False)
+```
+
+## 11. File Move
+
+
+```python
+import shutil
+# Source file path
+source = r"D:\Advance_Data_Sets\Temp\Graphs_Data_DB.xlsx"
+# Destination path (D drive)
+destination = r"D:\Advance_Data_Sets\Raiwind\gr"
+# Copy file from source to destination
+shutil.copy(source, destination)
+print("File copied successfully!")
+```
+
+## 12. Dash Bord
+
+
+```python
+import xlwings as xw
+import time
+
+# Mapping sheet names to their DataFrames
+sheet_df_map = {
+    "GSM": gsm_df_map_filtered,
+    "UMTS": umts_df_map_filtered,
+    "LTE": lte_df_map_filtered
+}
+
+# Mapping dashboards
+dashboard_sheets = {
+    "GSM": "GSM_DB",
+    "UMTS": "UMTS_DB",
+    "LTE": "LTE_DB"
+}
+
+# Mapping slicers
+slicer_map = {
+    "GSM": "Slicer_Zone",
+    "UMTS": "Slicer_Zone1",
+    "LTE": "Slicer_Zone2"
+}
+
+# 🚫 Run Excel invisibly
+app = xw.App(visible=False)
+app.display_alerts = False
+app.screen_updating = False
+app.calculation = 'manual'
+
+try:
+    # 📘 Load workbook
+    wb = app.books.open("D:/Advance_Data_Sets/Raiwind/gr/Graphs_Data_DB.XLSX")
+
+    # === Write DataFrames to sheets ===
+    for sheet_name, df in sheet_df_map.items():
+        sheet = wb.sheets[sheet_name]
+        sheet.range("A2").expand().clear_contents()
+        sheet.range("A2").value = df.values.tolist()
+
+    # 🔄 Refresh all pivots/queries once
+    wb.api.RefreshAll()
+    time.sleep(1.0)  # increase if you have large data
+
+    # === Reset slicers for each sheet ===
+    for tech, slicer_name in slicer_map.items():
+        for sc in wb.api.SlicerCaches:
+            if sc.Name == slicer_name:
+                # Deselect all
+                for item in sc.SlicerItems:
+                    item.Selected = False
+                # Select only "Major Server"
+                for item in sc.SlicerItems:
+                    item.Selected = (item.Name.strip() == "Major Server")
+            else:
+                # Default → select first item
+                for item in sc.SlicerItems:
+                    item.Selected = False
+                if sc.SlicerItems.Count > 0:
+                    sc.SlicerItems(1).Selected = True
+
+    # === Hide all sheets except dashboards ===
+    for sheet in wb.sheets:
+        if sheet.name in dashboard_sheets.values():
+            sheet.visible = True
+        else:
+            sheet.visible = False
+
+    # 🚫 Show only tabs for dashboards
+    wb.api.Windows(1).DisplayWorkbookTabs = True
+    wb.api.Windows(1).DisplayHeadings = False
+    app.api.DisplayFormulaBar = False
+
+    # 🔍 Set zoom for each dashboard
+    for dashboard_name in dashboard_sheets.values():
+        dashboard = wb.sheets[dashboard_name]
+        dashboard.activate()
+        dashboard.api.Parent.Windows(1).Zoom = 80
+
+    # 💾 Save and close workbook
+    wb.save()
+    wb.close()
+
+finally:
+    app.quit()
+```
+
+
+```python
+# re-set all the variable from the RAM
+%reset -f
+```
+
+## 13. Export Dashbord as Images
+
+
+```python
+import xlwings as xw
+from PIL import ImageGrab
+import os
+
+def export_excel_ranges_to_images(
+    excel_path: str,
+    output_folder: str,
+    default_range: str = "E4:K36",
+    custom_sheet_ranges: dict = None,
+    sheets_to_include: list = None,
+    sheets_to_exclude: list = None
+):
+    """
+    Export a default or sheet-specific range from each worksheet to image files.
+
+    Parameters:
+    - excel_path: path to the Excel file.
+    - output_folder: where to save the images.
+    - default_range: default range to apply if not overridden per sheet.
+    - custom_sheet_ranges: dict of {sheet_name: custom_range} to override default.
+    - sheets_to_include: list of sheet names to include (optional).
+    - sheets_to_exclude: list of sheet names to exclude (optional).
+    """
+
+    os.makedirs(output_folder, exist_ok=True)
+    custom_sheet_ranges = custom_sheet_ranges or {}
+    sheets_to_include = sheets_to_include or []
+    sheets_to_exclude = sheets_to_exclude or []
+   
+    app = xw.App(visible=False)
+    wb = app.books.open(excel_path)
+
+    for sheet in wb.sheets:
+        sheet_name = sheet.name
+
+        # 🧠 Sheet filtering
+        if sheets_to_include and sheet_name not in sheets_to_include:
+            print(f"⚠️ Skipping '{sheet_name}' (not in include list)")
+            continue
+        if sheet_name in sheets_to_exclude:
+            print(f"⚠️ Skipping '{sheet_name}' (in exclude list)")
+            continue
+
+        # 🎯 Pick range (custom or default)
+        cell_range = custom_sheet_ranges.get(sheet_name, default_range)
+
+        try:
+            target_range = sheet.range(cell_range)
+            target_range.api.CopyPicture(Format=2)
+
+            img = ImageGrab.grabclipboard()
+            if img:
+                safe_range = cell_range.replace(":", "-")
+                image_path = os.path.join(output_folder, f"{sheet_name}_{safe_range}.png")
+                img.save(image_path)
+                print(f"✅ Saved image for '{sheet_name}' → {image_path}")
+            else:
+                print(f"❌ Failed to grab image from '{sheet_name}'")
+
+        except Exception as e:
+            print(f"❌ Error processing '{sheet_name}': {e}")
+
+    wb.close()
+    app.quit()
+```
+
+
+```python
+sheets_to_include = ["GSM_DB","UMTS_DB","LTE_DB"]
+
+# 🟢 Default range for most sheets
+default_range = "D2:J34"
+
+# 🟡 Override only these sheets
+custom_sheet_ranges = {
+    "GSM_DB": "D3:Z81",
+    "UMTS_DB": "F3:AB82",
+    "LTE_DB": "D2:Z100",
+}
+
+export_excel_ranges_to_images(
+    excel_path=r"D:\Advance_Data_Sets\Raiwind\gr\Graphs_Data_DB.xlsx",
+    output_folder=r"D:\Advance_Data_Sets\Raiwind\gr",
+    default_range=default_range,
+    custom_sheet_ranges=custom_sheet_ranges,
+    sheets_to_exclude='',
+    sheets_to_include=["GSM_DB","UMTS_DB","LTE_DB"]
+)
+```
+
+
+```python
+# re-set all the variable from the RAM
+%reset -f
+```
+
+
+```python
+
+```
