@@ -1,0 +1,202 @@
+```python
+import win32com.client as win32
+import pythoncom
+import time
+import os
+import subprocess
+
+# -----------------------------------------------------
+# 📋 Function 1: Safely get a working Excel COM object
+# -----------------------------------------------------
+def get_excel_app():
+    """Ensure a valid Excel COM object is returned."""
+    pythoncom.CoInitialize()
+    try:
+        excel = win32.GetActiveObject("Excel.Application")
+        _ = excel.Workbooks
+    except Exception:
+        try:
+            subprocess.call("taskkill /F /IM excel.exe", shell=True)
+            time.sleep(1)
+        except Exception:
+            pass
+        excel = win32.Dispatch("Excel.Application")
+    return excel
+
+
+# -----------------------------------------------------
+# 📋 Function 2: Copy Excel range and paste into email
+# -----------------------------------------------------
+def copy_excel_range_to_email(file_path, sheet_name, start_cell, end_cell):
+    """Copy specific Excel range (with formatting) and paste into active Outlook email body."""
+    excel = get_excel_app()
+
+    try:
+        excel.Visible = False
+    except Exception:
+        pass
+
+    wb = excel.Workbooks.Open(os.path.abspath(file_path), ReadOnly=True)
+    ws = wb.Sheets(sheet_name)
+
+    ws.Range(f"{start_cell}:{end_cell}").Copy()
+
+    outlook = win32.Dispatch("Outlook.Application")
+    inspector = outlook.ActiveInspector()
+
+    if not inspector:
+        raise RuntimeError("⚠️ Please open or display a new Outlook email before copying tables.")
+
+    mail = inspector.CurrentItem
+    word_editor = mail.GetInspector.WordEditor
+    word_editor.Application.Selection.Paste()
+
+    time.sleep(1)
+    wb.Close(SaveChanges=False)
+
+
+# -----------------------------------------------------
+# 🖼️ Function 3: Insert images into the Outlook email
+# -----------------------------------------------------
+def insert_images_to_email(mail, image_paths):
+    """Insert multiple images into Outlook email body (in order)."""
+    word_editor = mail.GetInspector.WordEditor
+    sel = word_editor.Application.Selection
+
+    for img_path in image_paths:
+        if os.path.exists(img_path):
+            sel.TypeParagraph()
+            sel.InlineShapes.AddPicture(FileName=os.path.abspath(img_path), LinkToFile=False, SaveWithDocument=True)
+            sel.TypeParagraph()
+            time.sleep(1)
+        else:
+            print(f"⚠️ Image not found: {img_path}")
+
+
+# -----------------------------------------------------
+# 📎 Function 4: Attach all files from multiple folders
+# -----------------------------------------------------
+# -----------------------------------------------------
+# 📎 Function 4: Attach files from multiple paths (files or folders)
+# -----------------------------------------------------
+def attach_files_from_multiple_paths(mail, paths):
+    """Attach multiple files and/or all files from given folders to the Outlook email."""
+    if not paths:
+        print("⚠️ No attachment paths provided.")
+        return
+
+    total_attachments = 0
+
+    for path in paths:
+        if not os.path.exists(path):
+            print(f"⚠️ Path not found: {path}")
+            continue
+
+        # If it's a single file
+        if os.path.isfile(path):
+            try:
+                mail.Attachments.Add(os.path.abspath(path))
+                print(f"📎 Attached file: {os.path.basename(path)}")
+                total_attachments += 1
+            except Exception as e:
+                print(f"❌ Failed to attach file {path}: {e}")
+
+        # If it's a folder → attach all files inside
+        elif os.path.isdir(path):
+            files = [os.path.join(path, f) for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
+            if not files:
+                print(f"⚠️ No files found in folder: {path}")
+                continue
+
+            for file_path in files:
+                try:
+                    mail.Attachments.Add(os.path.abspath(file_path))
+                    print(f"📎 Attached from folder: {os.path.basename(file_path)}")
+                    total_attachments += 1
+                except Exception as e:
+                    print(f"❌ Failed to attach {file_path}: {e}")
+
+    if total_attachments > 0:
+        print(f"✅ Total {total_attachments} file(s) successfully attached.")
+    else:
+        print("⚠️ No files were attached.")
+
+
+
+# -----------------------------------------------------
+# ✉️ Function 5: Create Outlook email and insert tables + images + attachments
+# -----------------------------------------------------
+def create_email_with_multiple_excel_tables(file_path, table_ranges, image_paths=None, attachment_folders=None):
+    """Create new Outlook email, insert multiple Excel tables, paste images, and attach files."""
+    pythoncom.CoInitialize()
+
+    outlook = win32.Dispatch("Outlook.Application")
+    mail = outlook.CreateItem(0)
+    mail.Subject = "2G/3G/4G KPIs Overview :: Raiwind Ijtima -Phase_1"
+    mail.Display()
+    time.sleep(2)
+
+    for sheet_name, start_cell, end_cell in table_ranges:
+        word_editor = mail.GetInspector.WordEditor
+        sel = word_editor.Application.Selection
+        sel.TypeText(f"\n📌 {sheet_name} \n")
+        sel.TypeParagraph()
+        sel.Font.Bold = True
+
+        copy_excel_range_to_email(file_path, sheet_name, start_cell, end_cell)
+        time.sleep(1)
+        sel.TypeParagraph()
+
+    # 🖼️ Insert images after all tables
+    if image_paths:
+        insert_images_to_email(mail, image_paths)
+
+    # 📎 Attach files (files or folders)
+    if attachment_folders:
+        attach_files_from_multiple_paths(mail, attachment_folders)
+
+    print("✅ All Excel tables, images, and attachments successfully added to Outlook email.")
+
+
+
+# -----------------------------------------------------
+# 🧠 Master Function
+# -----------------------------------------------------
+def apply_outlook_email_with_excel_tables(file_path, table_ranges, image_paths=None, attachment_folders=None):
+    create_email_with_multiple_excel_tables(file_path, table_ranges, image_paths, attachment_folders)
+    print("🎯 Outlook email created and all Excel tables + images + attachments inserted successfully.")
+
+
+# -----------------------------------------------------
+# 🚀 Run
+# -----------------------------------------------------
+if __name__ == "__main__":
+    excel_file = r"D:\Advance_Data_Sets\Raiwind\Output\Major.xlsx"
+    table_ranges = [
+        ("CS_TCH_GoS", "A3", "L12"),
+        ("GoS_SDCCH", "A3", "L12"),
+        ("CS_RAB_Cong_Ratio", "A3", "L12"),
+        ("DL_Thrp", "A3", "L19"),
+        ("Data_Volume", "A3", "L19"),
+    ]
+
+    image_files = [
+        r"D:\Advance_Data_Sets\Raiwind\gr\GSM_DB_D3-Z81.png",
+        r"D:\Advance_Data_Sets\Raiwind\gr\UMTS_DB_F3-AB82.png",
+        r"D:\Advance_Data_Sets\Raiwind\gr\LTE_DB_D2-Z100.png"
+    ]
+
+    # Multiple attachment folders
+    attachment_folders = [
+        r"D:\Advance_Data_Sets\Raiwind\Output\Major.xlsx",
+        r"D:\Advance_Data_Sets\Raiwind\Output\Other.xlsx",
+        r"D:\Advance_Data_Sets\Raiwind\Output\Raiwind.xlsx",
+        r"D:\Advance_Data_Sets\Raiwind\gr\Graphs_Data_DB.xlsx",
+        r"D:\Advance_Data_Sets\Raiwind\gr\GSM_DB_D3-Z81.png",
+        r"D:\Advance_Data_Sets\Raiwind\gr\UMTS_DB_F3-AB82.png",
+        r"D:\Advance_Data_Sets\Raiwind\gr\LTE_DB_D2-Z100.png"
+    ]
+
+    apply_outlook_email_with_excel_tables(excel_file, table_ranges, image_files, attachment_folders)
+
+```
